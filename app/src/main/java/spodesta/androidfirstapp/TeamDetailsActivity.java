@@ -1,16 +1,29 @@
 package spodesta.androidfirstapp;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.preference.PreferenceActivity;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.google.android.gms.maps.MapView;
+import com.loopj.android.http.*;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
+import cz.msebera.android.httpclient.Header;
 
 public class TeamDetailsActivity extends AppCompatActivity {
 
@@ -35,7 +48,7 @@ public class TeamDetailsActivity extends AppCompatActivity {
         ImageView view = (ImageView) findViewById(R.id.imageStadium);
         ImageView viewQB = (ImageView) findViewById(R.id.imageQB);
         TextView lblStadium = (TextView) findViewById(R.id.lblStadium);
-        TextView lblQB = (TextView) findViewById(R.id.lblQB);
+        final TextView lblQB = (TextView) findViewById(R.id.lblQB);
 
         int imageStadium = 0,imageQb = 0;
         String stadium = "",qb = "";
@@ -62,6 +75,35 @@ public class TeamDetailsActivity extends AppCompatActivity {
         viewQB.setImageResource(imageQb);
         lblStadium.setText(stadium);
         lblQB.setText(qb);
+
+
+
+
+        /*String NFLRestService = "http://localhost:46953/RestNFLService.svc/json/1";
+        JSONObject jsonObj;
+
+        ResExecution.get(null,new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                String _response = response.toString();// If the response is JSONObject instead of expected JSONArray
+                lblQB.setText(_response);
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
+                String _response = response.toString();// If the response is JSONObject instead of expected JSONArray
+                lblQB.setText(_response);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+
+            }
+
+
+        });*/
+
+
 
 
         view.setOnClickListener(new View.OnClickListener() {

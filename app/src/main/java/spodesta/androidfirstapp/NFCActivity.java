@@ -1,6 +1,9 @@
 package spodesta.androidfirstapp;
 
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -11,21 +14,26 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
-public class NFCActivity extends AppCompatActivity {
+public class NFCActivity extends AppCompatActivity
+{
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nfc);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        fab.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
@@ -40,106 +48,101 @@ public class NFCActivity extends AppCompatActivity {
         lista.add("East");
         lista.add("West");
 
+        final Context myContext = this.getBaseContext();
+
 
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,lista);
 
         listView.setAdapter(adapter);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Object  o = listView.getItemAtPosition(i);
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
+            {
+                Object  DivisionList = listView.getItemAtPosition(i);
 
                 Intent intent = new Intent(getApplicationContext(),DivisionActivity.class);
-                Bundle b = new Bundle();
-                ArrayList<String> lista = new ArrayList<String>();
-                ArrayList<String> teamsDescriptions = new ArrayList<>();
+                Bundle bundle = new Bundle();
+
+                ArrayList<String> teamNames = new ArrayList<String>();
+                ArrayList<String> teamCities = new ArrayList<>();
                 int[] images = new int[4];
                 String title = "Title";
+                int idDivision = 0;
 
-                switch (o.toString())
+                switch (DivisionList.toString())
                 {
                     case "North":
-                        lista.add("Vikings");
-                        teamsDescriptions.add("Minnesota");
-                        lista.add("Packers");
-                        teamsDescriptions.add("Green bay");
-                        lista.add("Lions");
-                        teamsDescriptions.add("Detroit");
-                        lista.add("Bears");
-                        teamsDescriptions.add("Chicago");
-                        images[0] = R.drawable.vikings;
-                        images[1] = R.drawable.packers;
-                        images[2] = R.drawable.lions;
-                        images[3] = R.drawable.bears;
+                        idDivision = 5;
                         title = "NFC North";
                         break;
 
 
                     case "South":
-                        lista.add("Saints");
-                        lista.add("Panthers");
-                        lista.add("Falcons");
-                        lista.add("Buccaneers");
-                        images[0] = R.drawable.saints;
-                        images[1] = R.drawable.panthers;
-                        images[2] = R.drawable.falcons;
-                        images[3] = R.drawable.buccaneers;
-                        teamsDescriptions.add("New Orleans");
-                        teamsDescriptions.add("Carolina");
-                        teamsDescriptions.add("Atlanta");
-                        teamsDescriptions.add("Tampa Bay");
+                        idDivision = 6;
                         title = "NFC South";
                         break;
 
 
                     case "East":
-                        lista.add("Eagles");
-                        lista.add("Cowboys");
-                        lista.add("Redskins");
-                        lista.add("Giants");
-                        images[0] = R.drawable.eagles;
-                        images[1] = R.drawable.cowboys;
-                        images[2] = R.drawable.redskins;
-                        images[3] = R.drawable.giants;
-                        teamsDescriptions.add("Philadelphia");
-                        teamsDescriptions.add("Dallas");
-                        teamsDescriptions.add("Washington");
-                        teamsDescriptions.add("New York");
+                        idDivision = 7;
                         title = "NFC East";
                         break;
 
 
                     case "West":
-                        lista.add("Rams");
-                        lista.add("Seahawks");
-                        lista.add("Cardinals");
-                        lista.add("49ers");
-                        images[0] = R.drawable.rams;
-                        images[1] = R.drawable.seahawks;
-                        images[2] = R.drawable.cardinals;
-                        images[3] = R.drawable.niners;
-                        teamsDescriptions.add("Los Angeles");
-                        teamsDescriptions.add("Seattle");
-                        teamsDescriptions.add("Arizona");
-                        teamsDescriptions.add("San Francisco");
+                        idDivision = 8;
                         title = "NFC West";
                         break;
 
                 }
 
-                b.putStringArrayList("lista",lista);
-                b.putIntArray("images",images);
-                b.putString("title",title);
-                b.putStringArrayList("teamsDescriptions",teamsDescriptions);
-                intent.putExtras(b);
+                Cursor cursor = getTeamsFromDB(idDivision);
+                int eachTeam = 0;
+                while (cursor.moveToNext())
+                {
+                    String team = cursor.getString(0);
+                    String city = cursor.getString(1);
+                    teamNames.add(team);
+                    teamCities.add(city);
+                    images[eachTeam] = getResources().getIdentifier(team.toLowerCase(), "drawable", myContext.getPackageName());
+                    eachTeam++;
+                }
+
+                bundle.putStringArrayList("lista",teamNames);
+                bundle.putIntArray("images",images);
+                bundle.putString("title",title);
+                bundle.putStringArrayList("teamsDescriptions",teamCities);
+                intent.putExtras(bundle);
                 startActivity(intent);
-
-
             }
         });
 
     }
 
+    private Cursor getTeamsFromDB(int idDivision)
+    {
+        String[] whereArgs = new String[] { String.valueOf(idDivision) };
+        DatabaseHelper myDbHelper = new DatabaseHelper(this);
+        try {
+            myDbHelper.createDataBase();
+        } catch (IOException ioe) {
+            throw new Error("Unable to create database");
+        }
+        try {
+            myDbHelper.openDataBase();
+        } catch (java.sql.SQLException sqle) {
+
+        }
+        SQLiteDatabase sd = myDbHelper.getReadableDatabase();
+        String[] tableColumns = new String[] {
+                "name",
+                "city"
+        };
+        String whereClause = "idDivision = ?";
+        String orderBy = "id";
+        return sd.query("team", tableColumns, whereClause, whereArgs, null, null, orderBy);
+    }
 }
